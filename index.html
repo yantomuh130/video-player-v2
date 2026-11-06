@@ -1,1 +1,135 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer">
+<title>Video Player</title>
 
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 15px;
+  background: #111;
+  color: #fff;
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  max-width: 850px;
+  margin: auto;
+}
+
+h2 {
+  text-align: center;
+  color: #ff4fa3;
+}
+
+video {
+  width: 100%;
+  background: #000;
+  border-radius: 10px;
+}
+
+.buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+button {
+  flex: 1;
+  padding: 14px 10px;
+  border: none;
+  border-radius: 8px;
+  background: #ff4fa3;
+  color: white;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #e52d83;
+}
+
+.info {
+  text-align: center;
+  color: #aaa;
+  font-size: 13px;
+  margin-top: 18px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>VIDEO PLAYER</h2>
+
+<video id="player" controls playsinline preload="metadata">
+  <source id="videoSource" src="" type="video/mp4">
+  Browser tidak mendukung video.
+</video>
+
+<div class="buttons">
+  <button id="uploadBtn">Upload</button>
+  <button id="moreBtn">Cek Lainnya</button>
+</div>
+
+<p class="info">Selamat menonton</p>
+
+</div>
+
+<script>
+const ADSTERRA_URL =
+"https://auctionr.org/4/082c0172cd3ad57615967c63448360ec";
+
+const uploadBtn = document.getElementById("uploadBtn");
+const moreBtn = document.getElementById("moreBtn");
+const player = document.getElementById("player");
+
+function openAdsterra() {
+  window.location.href = ADSTERRA_URL;
+}
+
+uploadBtn.addEventListener("click", openAdsterra);
+moreBtn.addEventListener("click", openAdsterra);
+
+// Simpan posisi video
+window.addEventListener("pagehide", () => {
+  if (player.currentSrc) {
+    sessionStorage.setItem(
+      "videoTime",
+      player.currentTime
+    );
+  }
+});
+
+// Pulihkan posisi video setelah metadata tersedia
+player.addEventListener("loadedmetadata", () => {
+  const savedTime = sessionStorage.getItem("videoTime");
+
+  if (savedTime && Number(savedTime) > 0) {
+    player.currentTime = Number(savedTime);
+  }
+});
+
+// Simpan posisi ketika video berjalan
+player.addEventListener("timeupdate", () => {
+  if (!player.paused) {
+    sessionStorage.setItem(
+      "videoTime",
+      player.currentTime
+    );
+  }
+});
+</script>
+
+</body>
+</html>
