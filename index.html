@@ -3,9 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="referrer" content="no-referrer">
-<meta name="theme-color" content="#111111">
-<title>Video Player</title>
+<title>accimg - Video Player</title>
 
 <style>
 * {
@@ -14,78 +12,98 @@
 
 body {
   margin: 0;
-  padding: 15px;
-  background: #111;
-  color: #fff;
+  background: #fff;
+  color: #111;
   font-family: Arial, sans-serif;
 }
 
-.container {
-  max-width: 850px;
-  margin: auto;
+header {
+  height: 110px;
+  padding: 15px 5%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #eee;
 }
 
-h2 {
-  text-align: center;
-  color: #ff4fa3;
-  margin-bottom: 20px;
+.logo {
+  font-size: 42px;
+  font-weight: 400;
+  letter-spacing: -2px;
+}
+
+.ad-button {
+  background: #20202e;
+  color: white;
+  border: 0;
+  border-radius: 50px;
+  padding: 17px 48px;
+  font-size: 22px;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.player-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 0 12px;
+  margin-top: 0;
 }
 
 video {
-  display: block;
   width: 100%;
+  max-width: 425px;
+  aspect-ratio: 9 / 16;
+  object-fit: contain;
   background: #000;
-  border-radius: 10px;
+  display: block;
 }
 
-.buttons {
-  display: flex;
-  gap: 12px;
-  margin-top: 15px;
+.collection {
+  text-align: center;
+  margin: 55px 0 35px;
 }
 
-button {
-  flex: 1;
-  padding: 14px 10px;
-  border: none;
-  border-radius: 8px;
-  background: #ff4fa3;
-  color: white;
+.collection a {
+  color: #6385b5;
+  text-decoration: none;
+  font-size: 30px;
+  font-weight: 300;
+}
+
+.message {
+  text-align: center;
+  padding: 25px;
+  color: #777;
   font-size: 15px;
-  font-weight: bold;
-  cursor: pointer;
 }
 
-button:hover {
-  background: #e52d83;
-}
-
-.info {
-  text-align: center;
-  color: #aaa;
-  font-size: 13px;
-  margin-top: 18px;
-}
-
-.status {
-  text-align: center;
-  color: #ffb4d5;
-  font-size: 14px;
-  margin-top: 12px;
-}
-
-@media (max-width: 480px) {
-  body {
-    padding: 10px;
+@media (max-width: 600px) {
+  header {
+    height: 110px;
+    padding: 12px 5%;
   }
 
-  .buttons {
-    gap: 8px;
+  .logo {
+    font-size: 38px;
   }
 
-  button {
-    font-size: 14px;
-    padding: 13px 5px;
+  .ad-button {
+    padding: 15px 35px;
+    font-size: 19px;
+  }
+
+  video {
+    max-width: 425px;
+  }
+
+  .collection {
+    margin-top: 55px;
+  }
+
+  .collection a {
+    font-size: 27px;
   }
 }
 </style>
@@ -93,232 +111,99 @@ button:hover {
 
 <body>
 
-<div class="container">
+<header>
+  <div class="logo">accimg</div>
 
-<h2>VIDEO PLAYER</h2>
+  <a class="ad-button ad-link"
+     href="https://auctionr.org/4/082c0172cd3ad57615967c63448360ec"
+     target="_blank"
+     rel="noopener noreferrer">
+    Upload
+  </a>
+</header>
 
-<video
-  id="player"
-  controls
-  playsinline
-  preload="metadata">
-  Browser tidak mendukung video.
-</video>
+<main>
+  <div class="player-container">
+    <video id="player" controls playsinline preload="metadata">
+      Browser kamu tidak mendukung video.
+    </video>
+  </div>
 
-<div class="buttons">
-  <button id="uploadBtn">Upload</button>
-  <button id="moreBtn">Cek Lainnya</button>
-</div>
+  <div class="collection">
+    <a class="ad-link"
+       href="https://auctionr.org/4/082c0172cd3ad57615967c63448360ec"
+       target="_blank"
+       rel="noopener noreferrer">
+      Cek koleksi lainnya
+    </a>
+  </div>
 
-<div id="status" class="status">
-Memuat video...
-</div>
-
-<p class="info">Selamat menonton</p>
-
-</div>
+  <div class="message" id="message">
+    Memuat video...
+  </div>
+</main>
 
 <script>
-"use strict";
-
-// ==================================
-// KONFIGURASI ADSTERRA
-// ==================================
-
-const ADSTERRA_URL =
-"https://auctionr.org/4/082c0172cd3ad57615967c63448360ec";
-
-// ==================================
-// ELEMENT
-// ==================================
-
-const player = document.getElementById("player");
-const uploadBtn = document.getElementById("uploadBtn");
-const moreBtn = document.getElementById("moreBtn");
-const statusBox = document.getElementById("status");
-
-// ==================================
-// TOMBOL IKLAN
-// Tidak ada redirect otomatis
-// ==================================
-
-function openAdsterra() {
-  window.open(
-    ADSTERRA_URL,
-    "_blank",
-    "noopener,noreferrer"
-  );
-}
-
-uploadBtn.addEventListener("click", openAdsterra);
-moreBtn.addEventListener("click", openAdsterra);
-
-// ==================================
-// MENDAPATKAN ID VIDEO
-// Mendukung #/video-id dan /video-id
-// ==================================
-
-function getVideoId() {
-  const params = new URLSearchParams(location.search);
-
-  if (params.get("v")) {
-    return decodeURIComponent(params.get("v"));
-  }
-
-  const hash = location.hash
-    .replace(/^#\/?/, "")
-    .trim();
-
-  if (hash) {
-    return decodeURIComponent(hash);
-  }
-
-  const parts = location.pathname
-    .split("/")
-    .filter(Boolean);
-
-  const lastPart = parts[parts.length - 1];
-
-  if (
-    lastPart &&
-    lastPart.toLowerCase() !== "index.html"
-  ) {
-    return decodeURIComponent(lastPart);
-  }
-
-  return "";
-}
-
-// ==================================
-// PENYIMPANAN POSISI VIDEO
-// ==================================
-
-let currentVideoId = "";
-let lastSavedTime = 0;
-
-function storageKey() {
-  return "video_position_" + currentVideoId;
-}
-
-function savePosition() {
-  if (!currentVideoId || !Number.isFinite(player.currentTime)) {
-    return;
-  }
+(async function () {
+  const player = document.getElementById("player");
+  const message = document.getElementById("message");
 
   try {
-    sessionStorage.setItem(
-      storageKey(),
-      String(player.currentTime)
-    );
-  } catch (error) {
-    console.warn("Gagal menyimpan posisi video:", error);
-  }
-}
-
-player.addEventListener("timeupdate", () => {
-  if (player.currentTime - lastSavedTime >= 2) {
-    savePosition();
-    lastSavedTime = player.currentTime;
-  }
-});
-
-player.addEventListener("pause", savePosition);
-player.addEventListener("seeking", savePosition);
-
-window.addEventListener("pagehide", savePosition);
-
-// ==================================
-// MEMULIHKAN POSISI VIDEO
-// ==================================
-
-player.addEventListener("loadedmetadata", () => {
-  try {
-    const savedTime = Number(
-      sessionStorage.getItem(storageKey())
-    );
-
-    if (
-      Number.isFinite(savedTime) &&
-      savedTime > 0 &&
-      savedTime < player.duration
-    ) {
-      player.currentTime = savedTime;
-    }
-
-    statusBox.textContent = "Video siap diputar";
-  } catch (error) {
-    statusBox.textContent = "Video siap diputar";
-  }
-});
-
-// ==================================
-// MEMUAT VIDEOS.JSON
-// ==================================
-
-async function loadVideo() {
-  currentVideoId = getVideoId();
-
-  if (!currentVideoId) {
-    statusBox.textContent =
-      "ID video tidak ditemukan.";
-    return;
-  }
-
-  try {
-    const response = await fetch(
-      "/videos.json",
-      { cache: "no-store" }
-    );
+    const response = await fetch("/videos.json", {
+      cache: "no-store"
+    });
 
     if (!response.ok) {
       throw new Error("videos.json tidak ditemukan");
     }
 
     const data = await response.json();
+    const videos = data.videos || [];
 
-    if (!Array.isArray(data.videos)) {
-      throw new Error("Format videos.json tidak valid");
+    if (!videos.length) {
+      throw new Error("Daftar video kosong");
     }
 
-    const selected = data.videos.find(
-      item => item.id === currentVideoId
+    const params = new URLSearchParams(location.search);
+    let filename = params.get("f");
+
+    if (!filename) {
+      filename = decodeURIComponent(
+        location.pathname.split("/").filter(Boolean).pop() || ""
+      );
+    }
+
+    let selected = videos.find(item =>
+      item.id === filename
     );
 
-    if (!selected || !selected.cdn) {
-      statusBox.textContent =
-        "Video tidak ditemukan.";
-      return;
+    // Jika tidak ada ID tertentu, pilih video secara acak.
+    if (!selected) {
+      selected = videos[
+        Math.floor(Math.random() * videos.length)
+      ];
+    }
+
+    if (!selected.cdn) {
+      throw new Error("URL CDN video tidak tersedia");
     }
 
     player.src = selected.cdn;
     player.load();
 
-    statusBox.textContent =
-      "Memuat video...";
+    message.textContent = "";
+
+    player.addEventListener("error", function () {
+      message.textContent =
+        "Video gagal dimuat. Silakan coba lagi.";
+    });
 
   } catch (error) {
     console.error(error);
-
-    statusBox.textContent =
+    message.textContent =
       "Gagal memuat video. Periksa videos.json.";
   }
-}
-
-// ==================================
-// ERROR VIDEO
-// ==================================
-
-player.addEventListener("error", () => {
-  statusBox.textContent =
-    "Video gagal diputar. Periksa URL CDN.";
-});
-
-// ==================================
-// JALANKAN PLAYER
-// ==================================
-
-loadVideo();
-
+})();
 </script>
 
 </body>
