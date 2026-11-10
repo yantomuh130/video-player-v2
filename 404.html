@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>acceimg - Video Player</title>
+<title>acceimg - Halaman Tidak Ditemukan (404)</title>
 <style>
 * { box-sizing: border-box; }
 body {
@@ -11,6 +11,9 @@ body {
     font-family: Arial, sans-serif;
     background: #fff;
     color: #111;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 header {
     height: 64px;
@@ -23,28 +26,54 @@ header {
 .logo {
     font-size: 24px;
     font-weight: 800;
+    text-decoration: none;
+    color: #111;
 }
 .btn {
-    background: #111;
+    background: #0088cc; /* Warna khas Telegram */
     color: white;
     text-decoration: none;
     padding: 11px 19px;
     border-radius: 9px;
     font-size: 14px;
+    font-weight: 600;
 }
 main {
-    padding: 25px 12px;
+    flex: 1;
+    padding: 40px 12px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+h1 {
+    font-size: 48px;
+    margin: 0 0 10px 0;
+    color: #1685e8;
+}
+p {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 25px;
+}
+.ad-container {
+    margin: 20px auto;
     text-align: center;
 }
-video {
-    display: block;
-    width: 65%;
-    max-width: 426px;
-    height: auto;
-    max-height: 75vh;
-    margin: 0 auto;
-    background: #000;
-    object-fit: contain;
+.ad-banner-link {
+    display: inline-block;
+    background: #f8f9fa;
+    border: 1px dashed #ccc;
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+}
+.ad-banner-link:hover {
+    background: #f1f3f5;
 }
 .collection {
     display: inline-block;
@@ -57,56 +86,25 @@ video {
 </head>
 <body>
 <header>
-    <div class="logo">acceimg</div>
-    <a class="btn" href="https://auctionr.org/4/082c0172cd3ad57615967c63448360ec" target="_blank" rel="noopener">Upload</a>
+    <a href="/" class="logo">acceimg</a>
+    <a class="btn" href="https://t.me/wuikwuik" target="_blank" rel="noopener">Join Telegram</a>
 </header>
 
 <main>
-    <video id="player" controls playsinline preload="metadata"></video>
-    <div id="message"></div>
-    <a class="collection" href="https://auctionr.org/4/082c0172cd3ad57615967c63448360ec" target="_blank" rel="noopener">Cek koleksi lainnya</a>
+    <h1>404</h1>
+    <p>Maaf, halaman atau video yang Anda cari tidak ditemukan atau sudah kedaluwarsa.</p>
+
+    <!-- Area Iklan Adsterra (Direct Link) -->
+    <div class="ad-container">
+        <a class="ad-banner-link" href="https://auctionr.org/4/082c0172cd3ad57615967c63448360ec" target="_blank" rel="noopener">
+            🔥 Sponsor / Informasi Penting (Klik Disini)
+        </a>
+    </div>
+
+    <div>
+        <a class="collection" href="https://auctionr.org/4/082c0172cd3ad57615967c63448360ec" target="_blank" rel="noopener">Cek koleksi lainnya</a>
+    </div>
 </main>
 
-<script>
-(async function () {
-    const player = document.getElementById("player");
-    const message = document.getElementById("message");
-
-    // Ambil nama file langsung dari URL, contoh /8968ce9b.mp4
-    const filename = decodeURIComponent(location.pathname.split("/").pop());
-
-    if (!/^[a-zA-Z0-9_-]+\.mp4$/i.test(filename)) {
-        message.textContent = "Link video tidak valid.";
-        return;
-    }
-
-    try {
-        const response = await fetch("/videos.json");
-        if (!response.ok) throw new Error("Gagal membaca videos.json");
-
-        const data = await response.json();
-        const videos = Array.isArray(data) ? data : data.videos;
-
-        if (!Array.isArray(videos)) throw new Error("Format videos.json tidak sesuai");
-
-        const selected = videos.find(item =>
-            item.id === filename ||
-            item.id === "upload/?" + "f=" + filename ||
-            item.id === "upload/" + filename
-        );
-
-        if (!selected || !selected.cdn) {
-            message.textContent = "Video tidak ditemukan.";
-            return;
-        }
-
-        player.src = selected.cdn;
-        player.load();
-    } catch (error) {
-        message.textContent = "Video gagal dimuat. Silakan coba lagi.";
-        console.error(error);
-    }
-})();
-</script>
 </body>
 </html>
