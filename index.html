@@ -4,14 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>acceimg - Video Player</title>
+
 <style>
-* { box-sizing: border-box; }
+* {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
     font-family: Arial, sans-serif;
     background: #fff;
     color: #111;
 }
+
 header {
     height: 64px;
     padding: 0 18px;
@@ -20,12 +25,14 @@ header {
     justify-content: space-between;
     border-bottom: 1px solid #eee;
 }
+
 .logo {
     font-size: 24px;
     font-weight: 800;
 }
+
 .btn {
-    background: #0088cc; /* Warna khas Telegram */
+    background: #0088cc;
     color: white;
     text-decoration: none;
     padding: 11px 19px;
@@ -33,32 +40,34 @@ header {
     font-size: 14px;
     font-weight: 600;
 }
+
 main {
     padding: 25px 12px;
     text-align: center;
 }
+
 video {
     display: block;
     width: 65%;
     max-width: 426px;
-    height: auto;
     max-height: 75vh;
+    height: auto;
     margin: 0 auto;
     background: #000;
     object-fit: contain;
 }
-.collection {
-    display: inline-block;
-    margin-top: 20px;
-    color: #1685e8;
-    text-decoration: none;
-    font-weight: 600;
+
+#message {
+    margin: 15px auto;
+    font-size: 14px;
+    color: #777;
 }
+
 .ad-container {
     margin: 20px auto;
     text-align: center;
 }
-/* Styling tambahan untuk banner alternatif berbasis Direct Link */
+
 .ad-banner-link {
     display: inline-block;
     background: #f8f9fa;
@@ -70,71 +79,199 @@ video {
     font-size: 14px;
     font-weight: bold;
 }
-.ad-banner-link:hover {
-    background: #f1f3f5;
+
+.collection {
+    display: inline-block;
+    margin-top: 20px;
+    color: #1685e8;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+@media (max-width: 600px) {
+    video {
+        width: 100%;
+        max-width: 426px;
+    }
 }
 </style>
 </head>
+
 <body>
+
 <header>
     <div class="logo">acceimg</div>
-    <a class="btn" href="https://t.me/wuikwuik" target="_blank" rel="noopener">Join Telegram</a>
+
+    <a class="btn"
+       href="https://t.me/wuikwuik"
+       target="_blank"
+       rel="noopener">
+       Join Telegram
+    </a>
 </header>
 
 <main>
-    <video id="player" controls playsinline preload="metadata"></video>
-    <div id="message"></div>
 
-    <!-- Area Iklan Adsterra (Direct Link yang disesuaikan menjadi banner tombol) -->
+    <video
+        id="player"
+        controls
+        playsinline
+        preload="metadata">
+    </video>
+
+    <div id="message">Memuat video...</div>
+
     <div class="ad-container">
-        <a class="ad-banner-link" href="https://auctionr.org/4/082c0172cd3ad57615967c63448360ec" target="_blank" rel="noopener">
-            🔥 Sponsor / Informasi Penting (Klik Disini)
+        <a class="ad-banner-link"
+           href="https://auctionr.org/4/082c0172cd3ad57615967c63448360ec"
+           target="_blank"
+           rel="noopener">
+           🔥 Sponsor / Informasi Penting (Klik Disini)
         </a>
     </div>
 
-    <a class="collection" href="https://auctionr.org/4/082c0172cd3ad57615967c63448360ec" target="_blank" rel="noopener">Cek koleksi lainnya</a>
+    <a class="collection"
+       href="https://auctionr.org/4/082c0172cd3ad57615967c63448360ec"
+       target="_blank"
+       rel="noopener">
+       Cek koleksi lainnya
+    </a>
+
 </main>
 
 <script>
 (async function () {
+
     const player = document.getElementById("player");
     const message = document.getElementById("message");
 
-    // Ambil nama file langsung dari URL, contoh /8968ce9b.mp4
-    const filename = decodeURIComponent(location.pathname.split("/").pop());
+    function showError(text) {
+        message.textContent = text;
+        player.style.display = "none";
+    }
+
+    function normalize(value) {
+        if (!value) return "";
+
+        try {
+            value = decodeURIComponent(String(value));
+        } catch (e) {}
+
+        value = value.split("?")[0].split("#")[0];
+
+        return value.split("/").pop().toLowerCase();
+    }
+
+    // Ambil nama video dari URL
+    let filename = "";
+
+    try {
+        filename = decodeURIComponent(
+            location.pathname.split("/").pop()
+        );
+    } catch (e) {
+        showError("Nama file tidak valid.");
+        return;
+    }
+
+    // Mendukung URL dengan parameter f
+    const params = new URLSearchParams(location.search);
+
+    if (params.has("f")) {
+        filename = params.get("f");
+    }
+
+    filename = normalize(filename);
 
     if (!/^[a-zA-Z0-9_-]+\.mp4$/i.test(filename)) {
-        message.textContent = "Link video tidak valid.";
+        showError("Link video tidak valid.");
         return;
     }
 
     try {
-        const response = await fetch("/videos.json");
-        if (!response.ok) throw new Error("Gagal membaca videos.json");
+
+        // Ambil database video
+        const response = await fetch("/videos.json", {
+            cache: "no-store"
+        });
+
+        if (!response.ok) {
+            throw new Error(
+                "HTTP " + response.status + " saat membaca videos.json"
+            );
+        }
 
         const data = await response.json();
-        const videos = Array.isArray(data) ? data : data.videos;
 
-        if (!Array.isArray(videos)) throw new Error("Format videos.json tidak sesuai");
+        const videos = Array.isArray(data)
+            ? data
+            : data.videos;
 
-        const selected = videos.find(item =>
-            item.id === filename ||
-            item.id === "upload/?" + "f=" + filename ||
-            item.id === "upload/" + filename
-        );
+        if (!Array.isArray(videos)) {
+            throw new Error("Format videos.json tidak valid.");
+        }
 
-        if (!selected || !selected.cdn) {
-            message.textContent = "Video tidak ditemukan.";
+        // Cari video berdasarkan ID atau nama file
+        const selected = videos.find(item => {
+
+            if (!item || !item.cdn) return false;
+
+            const possibleIds = [
+                item.id,
+                item.filename,
+                item.file,
+                item.name
+            ];
+
+            return possibleIds.some(id =>
+                normalize(id) === filename
+            );
+        });
+
+        if (!selected) {
+            showError("Video tidak ditemukan.");
             return;
         }
 
-        player.src = selected.cdn;
+        // Validasi alamat CDN
+        let cdnUrl;
+
+        try {
+            cdnUrl = new URL(selected.cdn);
+
+            if (!["http:", "https:"].includes(cdnUrl.protocol)) {
+                throw new Error("Protokol CDN tidak valid.");
+            }
+
+        } catch (e) {
+            showError("Alamat CDN video tidak valid.");
+            return;
+        }
+
+        // Putar video
+        player.src = cdnUrl.href;
+        player.style.display = "block";
         player.load();
+
+        message.textContent = "";
+
+        player.addEventListener("error", function () {
+            showError(
+                "Video gagal diputar. Periksa file CDN atau status server."
+            );
+        });
+
     } catch (error) {
-        message.textContent = "Video gagal dimuat. Silakan coba lagi.";
-        console.error(error);
+
+        console.error("Video Player Error:", error);
+
+        showError(
+            "Video gagal dimuat. Silakan coba beberapa saat lagi."
+        );
     }
+
 })();
 </script>
+
 </body>
 </html>
