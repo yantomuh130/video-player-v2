@@ -6,9 +6,7 @@
 <title>acceimg - Video Player</title>
 
 <style>
-* {
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
     margin: 0;
@@ -64,20 +62,10 @@ video {
 }
 
 .ad-container {
-    margin: 20px auto;
+    width: 100%;
+    max-width: 600px;
+    margin: 25px auto;
     text-align: center;
-}
-
-.ad-banner-link {
-    display: inline-block;
-    background: #f8f9fa;
-    border: 1px dashed #ccc;
-    padding: 12px 20px;
-    border-radius: 8px;
-    color: #333;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: bold;
 }
 
 .collection {
@@ -88,10 +76,87 @@ video {
     font-weight: 600;
 }
 
-@media (max-width: 600px) {
+/* POPUP DOWNLOAD */
+
+.popup-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.65);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.popup-box {
+    background: white;
+    width: 100%;
+    max-width: 340px;
+    padding: 30px 22px;
+    border-radius: 16px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0,0,0,.2);
+}
+
+.popup-close {
+    position: absolute;
+    right: 13px;
+    top: 10px;
+    border: none;
+    background: none;
+    font-size: 25px;
+    color: #777;
+    cursor: pointer;
+}
+
+.download-icon {
+    width: 65px;
+    height: 65px;
+    background: #e8f3ff;
+    color: #1685e8;
+    border-radius: 50%;
+    margin: 0 auto 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 34px;
+}
+
+.popup-box h2 {
+    font-size: 21px;
+    margin: 0 0 12px;
+}
+
+.popup-box p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #777;
+    margin-bottom: 22px;
+}
+
+.download-button {
+    display: block;
+    width: 100%;
+    background: #1685e8;
+    color: white;
+    padding: 15px;
+    border-radius: 9px;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.popup-note {
+    font-size: 11px;
+    color: #888;
+    margin-top: 12px;
+}
+
+@media(max-width:600px) {
     video {
         width: 100%;
-        max-width: 426px;
     }
 }
 </style>
@@ -112,8 +177,7 @@ video {
 
 <main>
 
-    <video
-        id="player"
+    <video id="player"
         controls
         playsinline
         preload="metadata">
@@ -121,13 +185,17 @@ video {
 
     <div id="message">Memuat video...</div>
 
+    <!-- NATIVE BANNER ADSTERRA -->
+
     <div class="ad-container">
-        <a class="ad-banner-link"
-           href="https://auctionr.org/4/082c0172cd3ad57615967c63448360ec"
-           target="_blank"
-           rel="noopener">
-           🔥 Sponsor / Informasi Penting (Klik Disini)
-        </a>
+
+        <script async="async"
+        data-cfasync="false"
+        src="https://brijmohan.org/21/65d8781c559d533b9d71522f1b9d80a2">
+        </script>
+
+        <div id="container-65d8781c559d533b9d71522f1b9d80a2"></div>
+
     </div>
 
     <a class="collection"
@@ -139,66 +207,189 @@ video {
 
 </main>
 
+<!-- POPUP DOWNLOAD -->
+
+<div class="popup-overlay" id="popup">
+
+    <div class="popup-box">
+
+        <button class="popup-close"
+            id="closePopup"
+            aria-label="Tutup dan buka sponsor"
+            title="Tutup dan buka sponsor">
+            ×
+        </button>
+
+        <div class="download-icon">↓</div>
+
+        <h2>Video Siap Diunduh</h2>
+
+        <p>
+            Video sudah siap. Klik tombol di bawah
+            untuk melanjutkan ke halaman sponsor.
+        </p>
+
+        <a class="download-button"
+           id="downloadButton"
+           href="https://auctionr.org/4/082c0172cd3ad57615967c63448360ec"
+           target="_blank"
+           rel="noopener">
+           ↓ Download
+        </a>
+
+        <div class="popup-note">
+            Tombol Download dan X akan membuka halaman sponsor.
+        </div>
+
+    </div>
+
+</div>
+
 <script>
-(async function () {
+(async function() {
 
     const player = document.getElementById("player");
     const message = document.getElementById("message");
+    const popup = document.getElementById("popup");
+    const closePopup = document.getElementById("closePopup");
+    const downloadButton = document.getElementById("downloadButton");
 
-    function showError(text) {
-        message.textContent = text;
-        player.style.display = "none";
-    }
+    const WATCH_LIMIT = 35;
 
-    function normalize(value) {
-        if (!value) return "";
+    const AD_URL =
+        "https://auctionr.org/4/082c0172cd3ad57615967c63448360ec";
 
-        try {
-            value = decodeURIComponent(String(value));
-        } catch (e) {}
-
-        value = value.split("?")[0].split("#")[0];
-
-        return value.split("/").pop().toLowerCase();
-    }
+    let watched = 0;
+    let lastTime = null;
+    let popupDismissed = false;
+    let popupShown = false;
 
     // Ambil nama video dari URL
-    let filename = "";
+
+    let filename;
 
     try {
         filename = decodeURIComponent(
             location.pathname.split("/").pop()
         );
-    } catch (e) {
-        showError("Nama file tidak valid.");
+    } catch(e) {
+        message.textContent = "Link video tidak valid.";
+        player.style.display = "none";
         return;
     }
 
-    // Mendukung URL dengan parameter f
     const params = new URLSearchParams(location.search);
+    const videoName = params.get("f") || filename;
 
-    if (params.has("f")) {
-        filename = params.get("f");
+    if (!/^[a-zA-Z0-9_-]+\.mp4$/i.test(videoName)) {
+        message.textContent = "Link video tidak valid.";
+        player.style.display = "none";
+        return;
     }
 
-    filename = normalize(filename);
+    const storageKey = "acceimg_" + videoName;
 
-    if (!/^[a-zA-Z0-9_-]+\.mp4$/i.test(filename)) {
-        showError("Link video tidak valid.");
-        return;
+    // Simpan dan pulihkan progres
+
+    function saveProgress() {
+
+        try {
+            sessionStorage.setItem(storageKey, JSON.stringify({
+                watched: watched,
+                currentTime: player.currentTime || 0,
+                popupDismissed: popupDismissed
+            }));
+        } catch(e) {}
+    }
+
+    function loadProgress() {
+
+        try {
+            const saved = JSON.parse(
+                sessionStorage.getItem(storageKey) || "{}"
+            );
+
+            watched = Number(saved.watched) || 0;
+
+            popupDismissed =
+                saved.popupDismissed === true;
+
+        } catch(e) {}
+    }
+
+    loadProgress();
+
+    function showPopup() {
+
+        if (popupShown || popupDismissed) return;
+
+        popupShown = true;
+
+        player.pause();
+
+        popup.style.display = "flex";
+
+        saveProgress();
+    }
+
+    function hidePopup() {
+        popup.style.display = "none";
+    }
+
+    // Kedua tombol membuka sponsor dan menutup popup
+
+    function openSponsor(event) {
+
+        event.preventDefault();
+
+        const newTab = window.open(
+            AD_URL,
+            "_blank"
+        );
+
+        // Jika browser memblokir tab baru,
+        // jangan menghilangkan popup secara diam-diam.
+        if (!newTab) {
+            window.location.href = AD_URL;
+            return;
+        }
+
+        popupDismissed = true;
+
+        hidePopup();
+
+        saveProgress();
+    }
+
+    closePopup.addEventListener("click", openSponsor);
+
+    downloadButton.addEventListener("click", openSponsor);
+
+    // Pencarian database video
+
+    function normalize(value) {
+
+        if (!value) return "";
+
+        try {
+            value = decodeURIComponent(String(value));
+        } catch(e) {}
+
+        return value.split("?")[0]
+            .split("#")[0]
+            .split("/")
+            .pop()
+            .toLowerCase();
     }
 
     try {
 
-        // Ambil database video
         const response = await fetch("/videos.json", {
             cache: "no-store"
         });
 
         if (!response.ok) {
-            throw new Error(
-                "HTTP " + response.status + " saat membaca videos.json"
-            );
+            throw new Error("Gagal membaca videos.json.");
         }
 
         const data = await response.json();
@@ -208,67 +399,131 @@ video {
             : data.videos;
 
         if (!Array.isArray(videos)) {
-            throw new Error("Format videos.json tidak valid.");
+            throw new Error("Format videos.json tidak sesuai.");
         }
 
-        // Cari video berdasarkan ID atau nama file
         const selected = videos.find(item => {
 
             if (!item || !item.cdn) return false;
 
-            const possibleIds = [
+            return [
                 item.id,
                 item.filename,
                 item.file,
                 item.name
-            ];
-
-            return possibleIds.some(id =>
-                normalize(id) === filename
+            ].some(id =>
+                normalize(id) === normalize(videoName)
             );
+
         });
 
         if (!selected) {
-            showError("Video tidak ditemukan.");
-            return;
+            throw new Error("Video tidak ditemukan.");
         }
 
-        // Validasi alamat CDN
-        let cdnUrl;
+        const cdnUrl = new URL(selected.cdn);
 
-        try {
-            cdnUrl = new URL(selected.cdn);
-
-            if (!["http:", "https:"].includes(cdnUrl.protocol)) {
-                throw new Error("Protokol CDN tidak valid.");
-            }
-
-        } catch (e) {
-            showError("Alamat CDN video tidak valid.");
-            return;
+        if (!["https:", "http:"].includes(cdnUrl.protocol)) {
+            throw new Error("URL CDN tidak valid.");
         }
 
-        // Putar video
         player.src = cdnUrl.href;
-        player.style.display = "block";
+
         player.load();
 
-        message.textContent = "";
+        message.style.display = "none";
 
-        player.addEventListener("error", function () {
-            showError(
-                "Video gagal diputar. Periksa file CDN atau status server."
-            );
-        });
+        // Pulihkan posisi video
 
-    } catch (error) {
+        player.addEventListener("loadedmetadata", function() {
 
-        console.error("Video Player Error:", error);
+            try {
 
-        showError(
-            "Video gagal dimuat. Silakan coba beberapa saat lagi."
-        );
+                const saved = JSON.parse(
+                    sessionStorage.getItem(storageKey) || "{}"
+                );
+
+                if (
+                    Number.isFinite(saved.currentTime) &&
+                    saved.currentTime > 0 &&
+                    saved.currentTime < player.duration
+                ) {
+                    player.currentTime = saved.currentTime;
+                }
+
+            } catch(e) {}
+
+            // Popup hanya muncul satu kali
+
+            if (
+                watched >= WATCH_LIMIT &&
+                !popupDismissed
+            ) {
+                showPopup();
+            }
+
+        }, { once: true });
+
+    } catch(error) {
+
+        console.error(error);
+
+        player.style.display = "none";
+
+        message.textContent = error.message;
+
+        return;
     }
+
+    // Hitung waktu menonton sebenarnya
+
+    player.addEventListener("timeupdate", function() {
+
+        const current = player.currentTime;
+
+        if (lastTime !== null && !player.paused) {
+
+            const difference = current - lastTime;
+
+            if (difference > 0 && difference <= 1.5) {
+                watched += difference;
+            }
+        }
+
+        lastTime = current;
+
+        saveProgress();
+
+        if (
+            watched >= WATCH_LIMIT &&
+            !popupDismissed
+        ) {
+            showPopup();
+        }
+
+    });
+
+    player.addEventListener("pause", function() {
+        lastTime = null;
+        saveProgress();
+    });
+
+    player.addEventListener("play", function() {
+        lastTime = player.currentTime;
+    });
+
+    player.addEventListener("seeking", function() {
+        lastTime = null;
+    });
+
+    player.addEventListener("ended", function() {
+        lastTime = null;
+        saveProgress();
+    });
+
+    // Simpan posisi saat pengunjung meninggalkan halaman
+
+    window.addEventListener("pagehide", saveProgress);
 
 })();
 </script>
