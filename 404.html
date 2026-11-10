@@ -3,18 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>acceimg - Halaman Tidak Ditemukan (404)</title>
+<title>acceimg - Video Player</title>
+
 <style>
-* { box-sizing: border-box; }
+* {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
     font-family: Arial, sans-serif;
     background: #fff;
     color: #111;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
 }
+
 header {
     height: 64px;
     padding: 0 18px;
@@ -23,14 +25,14 @@ header {
     justify-content: space-between;
     border-bottom: 1px solid #eee;
 }
+
 .logo {
     font-size: 24px;
     font-weight: 800;
-    text-decoration: none;
-    color: #111;
 }
+
 .btn {
-    background: #0088cc; /* Warna khas Telegram */
+    background: #0088cc;
     color: white;
     text-decoration: none;
     padding: 11px 19px;
@@ -38,29 +40,53 @@ header {
     font-size: 14px;
     font-weight: 600;
 }
+
 main {
-    flex: 1;
-    padding: 40px 12px;
+    padding: 25px 12px;
     text-align: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
 }
-h1 {
-    font-size: 48px;
-    margin: 0 0 10px 0;
-    color: #1685e8;
+
+video {
+    display: none;
+    width: 65%;
+    max-width: 426px;
+    max-height: 75vh;
+    height: auto;
+    margin: 0 auto;
+    background: #000;
+    object-fit: contain;
 }
-p {
+
+#message {
+    margin: 25px auto;
+    color: #777;
     font-size: 16px;
-    color: #555;
-    margin-bottom: 25px;
 }
+
+#error {
+    display: none;
+    margin: 110px auto 30px;
+}
+
+.error-code {
+    font-size: 76px;
+    color: #1685e8;
+    font-weight: 400;
+}
+
+.error-text {
+    font-size: 16px;
+    color: #777;
+    line-height: 1.5;
+    max-width: 500px;
+    margin: 20px auto;
+}
+
 .ad-container {
     margin: 20px auto;
     text-align: center;
 }
+
 .ad-banner-link {
     display: inline-block;
     background: #f8f9fa;
@@ -72,9 +98,7 @@ p {
     font-size: 14px;
     font-weight: bold;
 }
-.ad-banner-link:hover {
-    background: #f1f3f5;
-}
+
 .collection {
     display: inline-block;
     margin-top: 20px;
@@ -82,29 +106,161 @@ p {
     text-decoration: none;
     font-weight: 600;
 }
+
+@media(max-width:600px) {
+    video {
+        width: 100%;
+    }
+}
 </style>
 </head>
+
 <body>
+
 <header>
-    <a href="/" class="logo">acceimg</a>
-    <a class="btn" href="https://t.me/wuikwuik" target="_blank" rel="noopener">Join Telegram</a>
+    <div class="logo">acceimg</div>
+
+    <a class="btn"
+       href="https://t.me/wuikwuik"
+       target="_blank"
+       rel="noopener">
+       Join Telegram
+    </a>
 </header>
 
 <main>
-    <h1>404</h1>
-    <p>Maaf, halaman atau video yang Anda cari tidak ditemukan atau sudah kedaluwarsa.</p>
 
-    <!-- Area Iklan Adsterra (Direct Link) -->
+    <video id="player" controls playsinline preload="metadata"></video>
+
+    <div id="message">Memuat video...</div>
+
+    <div id="error">
+        <div class="error-code">404</div>
+        <div class="error-text">
+            Maaf, halaman atau video yang Anda cari
+            tidak ditemukan atau sudah kedaluwarsa.
+        </div>
+    </div>
+
     <div class="ad-container">
-        <a class="ad-banner-link" href="https://auctionr.org/4/082c0172cd3ad57615967c63448360ec" target="_blank" rel="noopener">
-            🔥 Sponsor / Informasi Penting (Klik Disini)
+        <a class="ad-banner-link"
+           href="https://auctionr.org/4/082c0172cd3ad57615967c63448360ec"
+           target="_blank"
+           rel="noopener">
+           🔥 Sponsor / Informasi Penting (Klik Disini)
         </a>
     </div>
 
-    <div>
-        <a class="collection" href="https://auctionr.org/4/082c0172cd3ad57615967c63448360ec" target="_blank" rel="noopener">Cek koleksi lainnya</a>
-    </div>
+    <a class="collection"
+       href="https://auctionr.org/4/082c0172cd3ad57615967c63448360ec"
+       target="_blank"
+       rel="noopener">
+       Cek koleksi lainnya
+    </a>
+
 </main>
+
+<script>
+(async function() {
+
+    const player = document.getElementById("player");
+    const message = document.getElementById("message");
+    const error = document.getElementById("error");
+
+    function show404() {
+        player.style.display = "none";
+        message.style.display = "none";
+        error.style.display = "block";
+    }
+
+    function normalize(value) {
+        if (!value) return "";
+
+        try {
+            value = decodeURIComponent(String(value));
+        } catch(e) {}
+
+        value = value.split("?")[0].split("#")[0];
+
+        return value.split("/").pop().toLowerCase();
+    }
+
+    const params = new URLSearchParams(location.search);
+
+    let filename = params.get("f") ||
+        location.pathname.split("/").pop();
+
+    filename = normalize(filename);
+
+    if (!/^[a-zA-Z0-9_-]+\.mp4$/i.test(filename)) {
+        show404();
+        return;
+    }
+
+    try {
+
+        const response = await fetch("/videos.json", {
+            cache: "no-store"
+        });
+
+        if (!response.ok) {
+            throw new Error("videos.json tidak ditemukan");
+        }
+
+        const data = await response.json();
+
+        const videos = Array.isArray(data)
+            ? data
+            : data.videos;
+
+        if (!Array.isArray(videos)) {
+            throw new Error("Format database salah");
+        }
+
+        const selected = videos.find(item => {
+
+            if (!item || !item.cdn) return false;
+
+            const ids = [
+                item.id,
+                item.filename,
+                item.file,
+                item.name
+            ];
+
+            return ids.some(id =>
+                normalize(id) === filename
+            );
+        });
+
+        if (!selected) {
+            show404();
+            return;
+        }
+
+        const cdnUrl = new URL(selected.cdn);
+
+        if (!["http:", "https:"].includes(cdnUrl.protocol)) {
+            show404();
+            return;
+        }
+
+        player.src = cdnUrl.href;
+        player.style.display = "block";
+        message.style.display = "none";
+        player.load();
+
+        player.addEventListener("error", show404);
+
+    } catch(e) {
+
+        console.error(e);
+        show404();
+
+    }
+
+})();
+</script>
 
 </body>
 </html>
