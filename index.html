@@ -25,12 +25,13 @@ header {
     font-weight: 800;
 }
 .btn {
-    background: #111;
+    background: #0088cc; /* Warna khas Telegram */
     color: white;
     text-decoration: none;
     padding: 11px 19px;
     border-radius: 9px;
     font-size: 14px;
+    font-weight: 600;
 }
 main {
     padding: 25px 12px;
@@ -53,17 +54,44 @@ video {
     text-decoration: none;
     font-weight: 600;
 }
+.ad-container {
+    margin: 20px auto;
+    text-align: center;
+}
+/* Styling tambahan untuk banner alternatif berbasis Direct Link */
+.ad-banner-link {
+    display: inline-block;
+    background: #f8f9fa;
+    border: 1px dashed #ccc;
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+}
+.ad-banner-link:hover {
+    background: #f1f3f5;
+}
 </style>
 </head>
 <body>
 <header>
     <div class="logo">acceimg</div>
-    <a class="btn" href="https://auctionr.org/4/082c0172cd3ad57615967c63448360ec" target="_blank" rel="noopener">Upload</a>
+    <a class="btn" href="https://t.me/wuikwuik" target="_blank" rel="noopener">Join Telegram</a>
 </header>
 
 <main>
     <video id="player" controls playsinline preload="metadata"></video>
     <div id="message"></div>
+
+    <!-- Area Iklan Adsterra (Direct Link yang disesuaikan menjadi banner tombol) -->
+    <div class="ad-container">
+        <a class="ad-banner-link" href="https://auctionr.org/4/082c0172cd3ad57615967c63448360ec" target="_blank" rel="noopener">
+            🔥 Sponsor / Informasi Penting (Klik Disini)
+        </a>
+    </div>
+
     <a class="collection" href="https://auctionr.org/4/082c0172cd3ad57615967c63448360ec" target="_blank" rel="noopener">Cek koleksi lainnya</a>
 </main>
 
