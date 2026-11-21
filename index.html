@@ -290,7 +290,6 @@ video {
     // Simpan dan pulihkan progres
 
     function saveProgress() {
-
         try {
             sessionStorage.setItem(storageKey, JSON.stringify({
                 watched: watched,
@@ -301,32 +300,24 @@ video {
     }
 
     function loadProgress() {
-
         try {
             const saved = JSON.parse(
                 sessionStorage.getItem(storageKey) || "{}"
             );
 
             watched = Number(saved.watched) || 0;
-
-            popupDismissed =
-                saved.popupDismissed === true;
-
+            popupDismissed = saved.popupDismissed === true;
         } catch(e) {}
     }
 
     loadProgress();
 
     function showPopup() {
-
         if (popupShown || popupDismissed) return;
 
         popupShown = true;
-
         player.pause();
-
         popup.style.display = "flex";
-
         saveProgress();
     }
 
@@ -337,13 +328,9 @@ video {
     // Kedua tombol membuka sponsor dan menutup popup
 
     function openSponsor(event) {
-
         event.preventDefault();
 
-        const newTab = window.open(
-            AD_URL,
-            "_blank"
-        );
+        const newTab = window.open(AD_URL, "_blank");
 
         if (!newTab) {
             window.location.href = AD_URL;
@@ -351,9 +338,7 @@ video {
         }
 
         popupDismissed = true;
-
         hidePopup();
-
         saveProgress();
     }
 
@@ -363,7 +348,6 @@ video {
     // Pencarian database video
 
     function normalize(value) {
-
         if (!value) return "";
 
         try {
@@ -378,7 +362,6 @@ video {
     }
 
     try {
-
         const response = await fetch("/videos.json", {
             cache: "no-store"
         });
@@ -388,17 +371,13 @@ video {
         }
 
         const data = await response.json();
-
-        const videos = Array.isArray(data)
-            ? data
-            : data.videos;
+        const videos = Array.isArray(data) ? data : data.videos;
 
         if (!Array.isArray(videos)) {
             throw new Error("Format videos.json tidak sesuai.");
         }
 
         const selected = videos.find(item => {
-
             if (!item || !item.cdn) return false;
 
             return [
@@ -409,7 +388,6 @@ video {
             ].some(id =>
                 normalize(id) === normalize(videoName)
             );
-
         });
 
         if (!selected) {
@@ -429,9 +407,7 @@ video {
         // Pulihkan posisi video
 
         player.addEventListener("loadedmetadata", function() {
-
             try {
-
                 const saved = JSON.parse(
                     sessionStorage.getItem(storageKey) || "{}"
                 );
@@ -443,36 +419,26 @@ video {
                 ) {
                     player.currentTime = saved.currentTime;
                 }
-
             } catch(e) {}
 
-            if (
-                watched >= WATCH_LIMIT &&
-                !popupDismissed
-            ) {
+            if (watched >= WATCH_LIMIT && !popupDismissed) {
                 showPopup();
             }
-
         }, { once: true });
 
     } catch(error) {
-
         console.error(error);
-
         player.style.display = "none";
         message.textContent = error.message;
-
         return;
     }
 
     // Hitung waktu menonton sebenarnya
 
     player.addEventListener("timeupdate", function() {
-
         const current = player.currentTime;
 
         if (lastTime !== null && !player.paused) {
-
             const difference = current - lastTime;
 
             if (difference > 0 && difference <= 1.5) {
@@ -481,16 +447,11 @@ video {
         }
 
         lastTime = current;
-
         saveProgress();
 
-        if (
-            watched >= WATCH_LIMIT &&
-            !popupDismissed
-        ) {
+        if (watched >= WATCH_LIMIT && !popupDismissed) {
             showPopup();
         }
-
     });
 
     player.addEventListener("pause", function() {
