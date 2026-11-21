@@ -48,7 +48,7 @@ video {
     display: block;
     width: 65%;
     max-width: 426px;
-    max-height: 75vh;
+    max-height: 70vh;
     height: auto;
     margin: 0 auto;
     background: #000;
@@ -185,17 +185,18 @@ video {
 
     <div id="message">Memuat video...</div>
 
-    <!-- NATIVE BANNER ADSTERRA -->
-
+    <!-- ADSTERRA BANNER 300x250 -->
     <div class="ad-container">
-
-        <script async="async"
-        data-cfasync="false"
-        src="https://brijmohan.org/21/65d8781c559d533b9d71522f1b9d80a2">
+        <script>
+          atOptions = {
+            'key' : 'd528c0b4f5c7a6d7284a03cfbe3b726e',
+            'format' : 'iframe',
+            'height' : 250,
+            'width' : 300,
+            'params' : {}
+          };
         </script>
-
-        <div id="container-65d8781c559d533b9d71522f1b9d80a2"></div>
-
+        <script src="https://brijmohan.org/22/d528c0b4f5c7a6d7284a03cfbe3b726e"></script>
     </div>
 
     <a class="collection"
@@ -226,7 +227,6 @@ video {
 
         <p>
             Video sudah siap. Klik tombol di bawah
-        
         </p>
 
         <a class="download-button"
@@ -237,9 +237,7 @@ video {
            ↓ Download
         </a>
 
-        <div class="popup-note">
-            
-        </div>
+        <div class="popup-note"></div>
 
     </div>
 
@@ -292,7 +290,6 @@ video {
     // Simpan dan pulihkan progres
 
     function saveProgress() {
-
         try {
             sessionStorage.setItem(storageKey, JSON.stringify({
                 watched: watched,
@@ -303,32 +300,24 @@ video {
     }
 
     function loadProgress() {
-
         try {
             const saved = JSON.parse(
                 sessionStorage.getItem(storageKey) || "{}"
             );
 
             watched = Number(saved.watched) || 0;
-
-            popupDismissed =
-                saved.popupDismissed === true;
-
+            popupDismissed = saved.popupDismissed === true;
         } catch(e) {}
     }
 
     loadProgress();
 
     function showPopup() {
-
         if (popupShown || popupDismissed) return;
 
         popupShown = true;
-
         player.pause();
-
         popup.style.display = "flex";
-
         saveProgress();
     }
 
@@ -339,36 +328,26 @@ video {
     // Kedua tombol membuka sponsor dan menutup popup
 
     function openSponsor(event) {
-
         event.preventDefault();
 
-        const newTab = window.open(
-            AD_URL,
-            "_blank"
-        );
+        const newTab = window.open(AD_URL, "_blank");
 
-        // Jika browser memblokir tab baru,
-        // jangan menghilangkan popup secara diam-diam.
         if (!newTab) {
             window.location.href = AD_URL;
             return;
         }
 
         popupDismissed = true;
-
         hidePopup();
-
         saveProgress();
     }
 
     closePopup.addEventListener("click", openSponsor);
-
     downloadButton.addEventListener("click", openSponsor);
 
     // Pencarian database video
 
     function normalize(value) {
-
         if (!value) return "";
 
         try {
@@ -383,7 +362,6 @@ video {
     }
 
     try {
-
         const response = await fetch("/videos.json", {
             cache: "no-store"
         });
@@ -403,7 +381,6 @@ video {
         }
 
         const selected = videos.find(item => {
-
             if (!item || !item.cdn) return false;
 
             return [
@@ -414,7 +391,6 @@ video {
             ].some(id =>
                 normalize(id) === normalize(videoName)
             );
-
         });
 
         if (!selected) {
@@ -428,17 +404,13 @@ video {
         }
 
         player.src = cdnUrl.href;
-
         player.load();
-
         message.style.display = "none";
 
         // Pulihkan posisi video
 
         player.addEventListener("loadedmetadata", function() {
-
             try {
-
                 const saved = JSON.parse(
                     sessionStorage.getItem(storageKey) || "{}"
                 );
@@ -450,10 +422,7 @@ video {
                 ) {
                     player.currentTime = saved.currentTime;
                 }
-
             } catch(e) {}
-
-            // Popup hanya muncul satu kali
 
             if (
                 watched >= WATCH_LIMIT &&
@@ -461,28 +430,21 @@ video {
             ) {
                 showPopup();
             }
-
         }, { once: true });
 
     } catch(error) {
-
         console.error(error);
-
         player.style.display = "none";
-
         message.textContent = error.message;
-
         return;
     }
 
     // Hitung waktu menonton sebenarnya
 
     player.addEventListener("timeupdate", function() {
-
         const current = player.currentTime;
 
         if (lastTime !== null && !player.paused) {
-
             const difference = current - lastTime;
 
             if (difference > 0 && difference <= 1.5) {
@@ -491,7 +453,6 @@ video {
         }
 
         lastTime = current;
-
         saveProgress();
 
         if (
@@ -500,7 +461,6 @@ video {
         ) {
             showPopup();
         }
-
     });
 
     player.addEventListener("pause", function() {
@@ -520,8 +480,6 @@ video {
         lastTime = null;
         saveProgress();
     });
-
-    // Simpan posisi saat pengunjung meninggalkan halaman
 
     window.addEventListener("pagehide", saveProgress);
 
