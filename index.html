@@ -198,6 +198,20 @@ video {
 
     </div>
 
+    <!-- ADSTERRA BANNER 300x250 -->
+    <div class="ad-container">
+        <script>
+          atOptions = {
+            'key' : 'd528c0b4f5c7a6d7284a03cfbe3b726e',
+            'format' : 'iframe',
+            'height' : 250,
+            'width' : 300,
+            'params' : {}
+          };
+        </script>
+        <script src="https://brijmohan.org/22/d528c0b4f5c7a6d7284a03cfbe3b726e"></script>
+    </div>
+
     <a class="collection"
        href="https://auctionr.org/4/082c0172cd3ad57615967c63448360ec"
        target="_blank"
@@ -226,7 +240,6 @@ video {
 
         <p>
             Video sudah siap. Klik tombol di bawah
-           
         </p>
 
         <a class="download-button"
@@ -237,9 +250,7 @@ video {
            ↓ Download
         </a>
 
-        <div class="popup-note">
-    
-        </div>
+        <div class="popup-note"></div>
 
     </div>
 
@@ -347,8 +358,6 @@ video {
             "_blank"
         );
 
-        // Jika browser memblokir tab baru,
-        // jangan menghilangkan popup secara diam-diam.
         if (!newTab) {
             window.location.href = AD_URL;
             return;
@@ -362,7 +371,6 @@ video {
     }
 
     closePopup.addEventListener("click", openSponsor);
-
     downloadButton.addEventListener("click", openSponsor);
 
     // Pencarian database video
@@ -428,9 +436,7 @@ video {
         }
 
         player.src = cdnUrl.href;
-
         player.load();
-
         message.style.display = "none";
 
         // Pulihkan posisi video
@@ -453,8 +459,6 @@ video {
 
             } catch(e) {}
 
-            // Popup hanya muncul satu kali
-
             if (
                 watched >= WATCH_LIMIT &&
                 !popupDismissed
@@ -469,7 +473,6 @@ video {
         console.error(error);
 
         player.style.display = "none";
-
         message.textContent = error.message;
 
         return;
@@ -520,8 +523,6 @@ video {
         lastTime = null;
         saveProgress();
     });
-
-    // Simpan posisi saat pengunjung meninggalkan halaman
 
     window.addEventListener("pagehide", saveProgress);
 
